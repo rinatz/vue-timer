@@ -70,23 +70,22 @@ function resetTimer() {
   <div class="mx-10 mt-8">
     <div class="text-center text-h1">{{ timer.format("HH:mm:ss") }}</div>
 
-    <div class="mt-4">
-      <v-slider v-model="hour" label="時" :min="0" :max="99" :step="1" thumb-label>
+    <div class="d-flex flex-column align-center mt-8">
+      <v-slider v-model="hour" label="時" style="width: 512px;" :min="0" :max="99" :step="1" thumb-label>
         <template v-slot:append>
-          <v-text-field v-model="hour" density="compact" style="width: 70px" type="number"
-            hide-details single-line>
+          <v-text-field v-model="hour" density="compact" style="width: 70px" type="number" hide-details single-line>
           </v-text-field>
         </template>
       </v-slider>
 
-      <v-slider v-model="minute" label="分" :min="0" :max="59" :step="1" thumb-label>
+      <v-slider v-model="minute" label="分" style="width: 512px;" :min="0" :max="59" :step="1" thumb-label>
         <template v-slot:append>
           <v-text-field v-model="minute" density="compact" style="width: 70px" type="number" hide-details single-line>
           </v-text-field>
         </template>
       </v-slider>
 
-      <v-slider v-model="second" label="秒" :min="0" :max="59" :step="1" thumb-label>
+      <v-slider v-model="second" label="秒" style="width: 512px;" :min="0" :max="59" :step="1" thumb-label>
         <template v-slot:append>
           <v-text-field v-model="second" density="compact" style="width: 70px" type="number" hide-details single-line>
           </v-text-field>
