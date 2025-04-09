@@ -27,7 +27,7 @@ type Status = "stopped" | "running" | "paused";
 
 const status = ref("stopped" as Status);
 
-const message = computed(() => {
+const buttonText = computed(() => {
   if (status.value === "stopped") {
     return "開始";
   } else if (status.value === "running") {
@@ -78,7 +78,7 @@ function toggleTimer() {
 
   <p>{{ timer.format("HH:mm:ss") }}</p>
   <button v-if="status === 'stopped'" @click="startTimer">開始</button>
-  <button v-else @click="toggleTimer">{{ message }}</button>
+  <button v-else @click="toggleTimer">{{ buttonText }}</button>
 </template>
 
 <style scoped></style>
