@@ -28,6 +28,14 @@ const buttonText = computed(() => {
   }
 });
 
+const buttonColor = computed(() => {
+  if (status.value === "running") {
+    return "bg-pink";
+  } else {
+    return "bg-blue";
+  }
+});
+
 function startTimer() {
   status.value = "running";
 
@@ -95,8 +103,8 @@ function resetTimer() {
 
     <div class="d-flex justify-center ga-4">
       <v-btn @click="resetTimer">リセット</v-btn>
-      <v-btn v-if="status === 'stopped'" :disabled="!ready" @click="startTimer">開始</v-btn>
-      <v-btn v-else @click="toggleTimer">{{ buttonText }}</v-btn>
+      <v-btn v-if="status === 'stopped'" :disabled="!ready" @click="startTimer" :class="buttonColor">開始</v-btn>
+      <v-btn v-else @click="toggleTimer" :class="buttonColor">{{ buttonText }}</v-btn>
     </div>
   </div>
 </template>
