@@ -6,6 +6,7 @@
 
 - TypeScript
 - Vue
+- Vuetify
 
 ## インストール
 
