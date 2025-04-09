@@ -1,31 +1,22 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 
-const values = Array.from({ length: 100 }, (_, i) => {
-  return { value: i, label: String(i).padStart(2, "0") }
-});
+dayjs.extend(duration);
 
-const timer = ref(dayjs().startOf("date"));
+const timer = ref(dayjs.duration(0, "second"));
 
-function setHour(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  timer.value = timer.value.set("hour", parseInt(target.value));
-}
-
-function setMinute(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  timer.value = timer.value.set("minute", parseInt(target.value));
-}
-
-function setSecond(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  timer.value = timer.value.set("second", parseInt(target.value));
-}
+const hour = ref(0);
+const minute = ref(0);
+const second = ref(0);
 
 type Status = "stopped" | "running" | "paused";
-
 const status = ref("stopped" as Status);
+
+const ready = computed(() => {
+  return hour.value > 0 || minute.value > 0 || second.value > 0;
+});
 
 const buttonText = computed(() => {
   if (status.value === "stopped") {
@@ -40,12 +31,18 @@ const buttonText = computed(() => {
 function startTimer() {
   status.value = "running";
 
+  timer.value = dayjs.duration({
+    hours: hour.value,
+    minutes: minute.value,
+    seconds: second.value,
+  });
+
   const interval = setInterval(() => {
     if (status.value === "running") {
       timer.value = timer.value.subtract(1, "second");
     }
 
-    if (timer.value.format("HH:mm:ss") === "00:00:00") {
+    if (timer.value.asSeconds() <= 0) {
       status.value = "stopped";
       clearInterval(interval);
     }
@@ -59,26 +56,48 @@ function toggleTimer() {
     status.value = "running";
   }
 }
+
+function resetTimer() {
+  status.value = "stopped";
+  timer.value = dayjs.duration(0, "second");
+  hour.value = 0;
+  minute.value = 0;
+  second.value = 0;
+}
 </script>
 
 <template>
-  <select @change="setHour">
-    <option v-for="value in values" :key="value.value" :value="value.label">{{ value.label }}</option>
-  </select>
-  :
-  <select @change="setMinute">
-    <option v-for="value in values.slice(0, 60)" :key="value.value" :value="value.label">{{ value.label }}
-    </option>
-  </select>
-  :
-  <select @change="setSecond">
-    <option v-for="value in values.slice(0, 60)" :key="value.value" :value="value.label">{{ value.label }}
-    </option>
-  </select>
+  <div class="mx-10 mt-8">
+    <div class="text-center text-h1">{{ timer.format("HH:mm:ss") }}</div>
 
-  <p>{{ timer.format("HH:mm:ss") }}</p>
-  <button v-if="status === 'stopped'" @click="startTimer">開始</button>
-  <button v-else @click="toggleTimer">{{ buttonText }}</button>
+    <div class="mt-4">
+      <v-slider v-model="hour" label="時" :min="0" :max="99" :step="1" thumb-label>
+        <template v-slot:append>
+          <v-text-field v-model="hour" density="compact" style="width: 70px" type="number"
+            hide-details single-line>
+          </v-text-field>
+        </template>
+      </v-slider>
+
+      <v-slider v-model="minute" label="分" :min="0" :max="59" :step="1" thumb-label>
+        <template v-slot:append>
+          <v-text-field v-model="minute" density="compact" style="width: 70px" type="number" hide-details single-line>
+          </v-text-field>
+        </template>
+      </v-slider>
+
+      <v-slider v-model="second" label="秒" :min="0" :max="59" :step="1" thumb-label>
+        <template v-slot:append>
+          <v-text-field v-model="second" density="compact" style="width: 70px" type="number" hide-details single-line>
+          </v-text-field>
+        </template>
+      </v-slider>
+    </div>
+
+    <div class="d-flex justify-center ga-4">
+      <v-btn @click="resetTimer">リセット</v-btn>
+      <v-btn v-if="status === 'stopped'" :disabled="!ready" @click="startTimer">開始</v-btn>
+      <v-btn v-else @click="toggleTimer">{{ buttonText }}</v-btn>
+    </div>
+  </div>
 </template>
-
-<style scoped></style>
