@@ -2,7 +2,6 @@
 import { computed, ref } from "vue";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import confetti from "canvas-confetti";
 
 dayjs.extend(duration);
 
@@ -53,7 +52,6 @@ function startTimer() {
 
     if (timer.value.asSeconds() <= 0) {
       status.value = "stopped";
-      confetti();
       clearInterval(interval);
     }
   }, 1000);
