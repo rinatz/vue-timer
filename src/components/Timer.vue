@@ -6,12 +6,13 @@ import duration from "dayjs/plugin/duration";
 dayjs.extend(duration);
 
 const timer = ref(dayjs.duration(0, "second"));
+const timerTextColor = ref("text-black");
 
 const hour = ref(0);
 const minute = ref(0);
 const second = ref(0);
 
-type Status = "stopped" | "running" | "paused";
+type Status = "stopped" | "running" | "paused" | "timeup";
 const status = ref("stopped" as Status);
 
 const ready = computed(() => {
@@ -23,21 +24,30 @@ const buttonText = computed(() => {
     return "開始";
   } else if (status.value === "running") {
     return "一時停止";
-  } else {
+  } else if (status.value === "paused") {
     return "再開";
+  } else if (status.value === "timeup") {
+    return "停止";
   }
 });
 
 const buttonColor = computed(() => {
-  if (status.value === "running") {
-    return "bg-pink";
-  } else {
+  if (status.value === "stopped") {
     return "bg-blue";
+  } else if (status.value === "running") {
+    return "bg-pink";
+  } else if (status.value === "paused") {
+    return "bg-blue";
+  } else if (status.value === "timeup") {
+    return "bg-pink";
   }
 });
 
+let interval: number;
+
 function startTimer() {
   status.value = "running";
+  timerTextColor.value = "text-black";
 
   timer.value = dayjs.duration({
     hours: hour.value,
@@ -45,16 +55,25 @@ function startTimer() {
     seconds: second.value,
   });
 
-  const interval = setInterval(() => {
+  interval = setInterval(() => {
     if (status.value === "running") {
       timer.value = timer.value.subtract(1, "second");
     }
+    else if (status.value === "timeup") {
+      // 時間切れになったら、そこからの経過時間を表示
+      timer.value = timer.value.add(1, "second");
+    }
 
     if (timer.value.asSeconds() <= 0) {
-      status.value = "stopped";
-      clearInterval(interval);
+      status.value = "timeup";
+      timerTextColor.value = "text-red";
     }
   }, 1000);
+}
+
+function stopTimer() {
+  status.value = "stopped";
+  clearInterval(interval);
 }
 
 function toggleTimer() {
@@ -66,7 +85,7 @@ function toggleTimer() {
 }
 
 function resetTimer() {
-  status.value = "stopped";
+  stopTimer();
   timer.value = dayjs.duration(0, "second");
   hour.value = 0;
   minute.value = 0;
@@ -76,7 +95,7 @@ function resetTimer() {
 
 <template>
   <div class="mx-10 mt-8">
-    <div class="text-center text-h1">{{ timer.format("HH:mm:ss") }}</div>
+    <div class="text-center text-h1" :class="timerTextColor">{{ timer.format("HH:mm:ss") }}</div>
 
     <div class="d-flex flex-column align-center mt-8">
       <v-slider v-model="hour" label="時" style="width: 512px;" :min="0" :max="99" :step="1" thumb-label>
@@ -103,7 +122,9 @@ function resetTimer() {
 
     <div class="d-flex justify-center ga-4">
       <v-btn @click="resetTimer">リセット</v-btn>
-      <v-btn v-if="status === 'stopped'" :disabled="!ready" @click="startTimer" :class="buttonColor">開始</v-btn>
+      <v-btn v-if="status === 'stopped'" :disabled="!ready" @click="startTimer" :class="buttonColor">{{ buttonText }}
+      </v-btn>
+      <v-btn v-else-if="status === 'timeup'" @click="stopTimer" :class="buttonColor">{{ buttonText }}</v-btn>
       <v-btn v-else @click="toggleTimer" :class="buttonColor">{{ buttonText }}</v-btn>
     </div>
   </div>
